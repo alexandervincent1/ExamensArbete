@@ -1,32 +1,27 @@
-import os.path
+from backend.db import initialize_database, save_message
+from backend.gmail import myEmails
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-import os.path
-import base64
-import email
+def main():
+    # Fråga användaren i terminalen
+    try:
+        antal = int(input("Hur många mail vill du spara? "))
+    except ValueError:
+        antal = 10  # fallback om man skriver fel
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+    # Anslut till databasen
+    conn = initialize_database()
+    if conn:
+        # Hämta mail
+        msgs = myEmails(antal)
 
-def myEmails():
-    creds = None
-    if os.path.exists('token.json'):
-        creds= Credentials.from_authorized_user_file('token.json',SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow= InstalledAppFlow.from_client_secrets_file('credentials.json',SCOPES)
-            creds=flow.run_local_server(port=8081)
-        with open('token.json','w') as token:
-            token.write(creds.to_json())
-        # service=build('gmail','v1',Credentials=creds)
+        # Spara varje mail i databasen
+        for m in msgs:
+            save_message(conn, m['id'], m['sender'], m['subject'], m['body'])
+            print(f"✅ Sparat mail: {m['subject']} från {m['sender']}")
 
+        conn.close()
+    else:
+        print("❌ Kunde inte ansluta till databasen.")
 
-
-
-
-myEmails()
+if __name__ == "__main__":
+    main()
