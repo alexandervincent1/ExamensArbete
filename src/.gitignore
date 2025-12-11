@@ -1,0 +1,15 @@
+venv/
+.venv/
+env/
+ENV/
+venv*/
+
+**/.env
+*.env
+
+/src/.env
+/src/config/*.env
+/src/backend/gmail_config/
+src/backend/gmail_config/token.json
+src/backend/gmail_config/credentials*.json
+
