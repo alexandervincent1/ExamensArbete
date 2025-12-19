@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+src/backend/gmail_config/
+src/.env
+.env
+*.env
