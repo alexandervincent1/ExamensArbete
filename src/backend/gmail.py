@@ -7,6 +7,12 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+base_dir = os.path.dirname(__file__)
+BASE_PATH = os.path.join(base_dir, 'gmail_config') + os.sep
+creds_path = os.path.join(BASE_PATH, 'credentials.json')
+
+_creds = None
+
 
 def _extract_body_from_payload(payload):
     """Hämta text från Gmail payload (text/plain eller text/html)."""
@@ -27,14 +33,12 @@ def _extract_body_from_payload(payload):
             return txt
     return ''
 
-def myEmails(antal):
-    """Hämta ett visst antal mail från Gmail (utan maxResults, via paginering)."""
-    base_dir = os.path.dirname(__file__)
-    BASE_PATH = os.path.join(base_dir, 'gmail_config') + os.sep
-    creds = None
-    token_path = os.path.join(BASE_PATH, 'token.json')
-    creds_path = os.path.join(BASE_PATH, 'credentials.json')
 
+def login():
+    global _creds
+    creds = None  
+    token_path = os.path.join(BASE_PATH, 'token.json')
+    
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
 
@@ -47,10 +51,22 @@ def myEmails(antal):
         os.makedirs(BASE_PATH, exist_ok=True)
         with open(token_path, 'w', encoding='utf-8') as token_file:
             token_file.write(creds.to_json())
+    
+    _creds = creds
+    return creds
+    
 
+def logout():
+    os.remove("/Users/master/Desktop/ExamensArbete/src/backend/gmail_config/token.json")
+
+    
+def my_emails(antal):
+    """Hämta ett visst antal mail från Gmail."""
+    global _creds
+    
     messages_out = []
     try:
-        service = build('gmail', 'v1', credentials=creds)
+        service = build('gmail', 'v1', credentials=_creds)
         page_token = None
 
         while True:
@@ -58,7 +74,7 @@ def myEmails(antal):
             messages = result.get('messages', []) or []
 
             for msg in messages:
-                if len(messages_out) >= antal:   # stoppa när vi nått användarens antal
+                if len(messages_out) >= antal:
                     return messages_out
 
                 msg_id = msg.get('id')
@@ -78,7 +94,7 @@ def myEmails(antal):
                     'id': msg_id,
                     'sender': sender,
                     'subject': subject,
-                    'body': body_text
+                    'body': body_text 
                 })
 
             page_token = result.get('nextPageToken')
@@ -89,3 +105,9 @@ def myEmails(antal):
         print("Error:", error)
 
     return messages_out
+
+
+
+if __name__ == "__main__":
+    my_emails()
+    _extract_body_from_payload()

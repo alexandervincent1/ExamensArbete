@@ -2,7 +2,6 @@ import mysql.connector
 import json          
 import os            
 from dotenv import load_dotenv 
-from backend.gmail import myEmails
 
 BASE_PATH = "/Users/master/Desktop/ExamensArbete/src/"
 load_dotenv(BASE_PATH + '.env') 
@@ -84,17 +83,20 @@ def initialize_database():
         return None
 
 
-def save_message(conn, message_id, sender, subject, body):
+def save_message(conn, message_id, sender, subject, body, ai_folder=None, ai_summary=None, ai_subject=None):
     cursor = conn.cursor()
     sql = """
-    INSERT INTO gmail_messages (message_id, sender, subject, body, received_at)
-    VALUES (%s, %s, %s, %s, NOW())
+    INSERT INTO gmail_messages (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject, received_at)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
     ON DUPLICATE KEY UPDATE 
         sender=VALUES(sender), 
         subject=VALUES(subject), 
-        body=VALUES(body)
+        body=VALUES(body),
+        ai_folder=VALUES(ai_folder),
+        ai_summary=VALUES(ai_summary),
+        ai_subject=VALUES(ai_subject)
     """
-    cursor.execute(sql, (message_id, sender, subject, body))
+    cursor.execute(sql, (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject))
     conn.commit()
     cursor.close()
 
@@ -104,8 +106,6 @@ if __name__ == '__main__':
     
     if conn:
         print("✅ DB-modulen är redo för användning.")
-        myEmails(conn)
-        print("meddelandena laddades in")
         conn.close()
     else:
         print("Fel 5")
