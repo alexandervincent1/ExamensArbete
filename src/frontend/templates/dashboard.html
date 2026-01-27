@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Inkorg - MailSort{% endblock %}
+
+{% block content %}
+<aside class="sidebar">
+    <a href="{{ url_for('fetch_emails') }}" class="btn btn-primary btn-fetch-sidebar">
+        ✉️ Hämta nya mejl
+    </a>
+    
+    <ul class="folder-list">
+        <a href="{{ url_for('dashboard') }}" class="folder-link">
+            <li class="folder-item {% if current_folder == 'all' %}active{% endif %}">
+                <span class="folder-icon">📥</span>
+                <span class="folder-name">Alla mejl</span>
+                <span class="folder-count">{{ total_count }}</span>
+            </li>
+        </a>
+        {% for folder in folders %}
+        <a href="{{ url_for('dashboard', folder=folder.name) }}" class="folder-link">
+            <li class="folder-item {% if current_folder == folder.name %}active{% endif %}">
+                <span class="folder-icon">
+                    {% if folder.name == 'Inbox' %}📬
+                    {% elif folder.name == 'Spam' or folder.name == 'Skräp' %}🚫
+                    {% elif folder.name == 'Nyhetsbrev' %}📰
+                    {% elif folder.name == 'Reklam' %}📢
+                    {% elif folder.name == 'Arbete' %}💼
+                    {% elif folder.name == 'Privat' or folder.name == 'Personligt' %}👤
+                    {% elif folder.name == 'Kvitton' %}🧾
+                    {% elif folder.name == 'Övrigt' %}📂
+                    {% else %}📁{% endif %}
+                </span>
+                <span class="folder-name">{{ folder.name }}</span>
+                <span class="folder-count">{{ folder.count }}</span>
+            </li>
+        </a>
+        {% endfor %}
+    </ul>
+</aside>
+
+<section class="email-content">
+    {% if session.get('msg') %}
+    <div class="alert">
+        {{ session.pop('msg') }}
+    </div>
+    {% endif %}
+    
+    {% if emails %}
+    <form method="POST" action="{{ url_for('delete_selected') }}" id="email-form">
+        <div class="email-toolbar">
+            <div class="toolbar-left">
+                <input type="checkbox" id="select-all" class="email-checkbox" title="Markera alla">
+                <span class="toolbar-title">
+                    {% if current_folder == 'all' %}Alla mejl{% else %}{{ current_folder }}{% endif %}
+                    ({{ emails|length }})
+                </span>
+            </div>
+            <div class="toolbar-actions">
+                <button type="submit" class="btn btn-danger btn-small" id="delete-selected-btn" disabled>
+                    🗑️ Ta bort valda (<span id="selected-count">0</span>)
+                </button>
+            </div>
+        </div>
+    
+        <ul class="email-list">
+            {% for email in emails %}
+            <li class="email-item">
+                <input type="checkbox" name="selected_emails" value="{{ email.id }}" class="email-checkbox email-select">
+                <a href="{{ url_for('view_email', id=email.id) }}" class="email-item-link">
+                    <span class="email-sender">{{ email.sender | truncate(25) }}</span>
+                    <div class="email-content-preview">
+                        <span class="email-subject">{{ email.ai_subject or email.subject | truncate(40) }}</span>
+                        <span class="email-summary">- {{ email.ai_summary | truncate(60) if email.ai_summary else '' }}</span>
+                    </div>
+                    <span class="email-folder-tag">{{ email.ai_folder }}</span>
+                    <span class="email-date">{{ email.imported_at }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </form>
+    
+    <script>
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.email-select');
+        const deleteBtn = document.getElementById('delete-selected-btn');
+        const selectedCount = document.getElementById('selected-count');
+        
+        function updateCount() {
+            const checked = document.querySelectorAll('.email-select:checked').length;
+            selectedCount.textContent = checked;
+            deleteBtn.disabled = checked === 0;
+        }
+        
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateCount();
+        });
+        
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateCount);
+        });
+    </script>
+    {% else %}
+    <div class="email-toolbar">
+        <span class="toolbar-title">
+            {% if current_folder == 'all' %}Alla mejl{% else %}{{ current_folder }}{% endif %}
+            (0)
+        </span>
+    </div>
+    <div class="empty-state">
+        <span class="empty-state-icon">📭</span>
+        <p>Inga mejl att visa</p>
+        <a href="{{ url_for('fetch_emails') }}" class="btn btn-primary">Hämta mejl</a>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

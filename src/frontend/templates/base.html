@@ -1,13 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sv">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>{% block title %}MailSort{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>
-        <div class="hello"></div>
-    </h1>
+    <header class="header">
+        <div class="header-left">
+            <h1 class="logo">📧 MailSort</h1>
+        </div>
+        <div class="header-center">
+            <input type="text" class="search-bar" placeholder="Sök i mejl...">
+        </div>
+        <div class="header-right">
+            {% if logged_in %}
+                <span class="user-email">{{ user_email }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logga ut</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main-container">
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ email.ai_subject or email.subject }} - MailSort{% endblock %}
+
+{% block content %}
+<div class="email-view-container">
+    <div class="email-view-header">
+        <a href="{{ url_for('dashboard') }}" class="btn-back">← Tillbaka</a>
+        <form method="POST" action="{{ url_for('delete_email', id=email.id) }}" class="delete-form-inline">
+            <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Ta bort detta mejl?');">
+                🗑️ Ta bort
+            </button>
+        </form>
+    </div>
+    
+    <article class="email-view">
+        <header class="email-view-top">
+            <h1 class="email-view-subject">{{ email.ai_subject or email.subject }}</h1>
+            <span class="email-folder-tag">{{ email.ai_folder }}</span>
+        </header>
+        
+        <div class="email-view-meta">
+            <div class="email-view-sender">
+                <strong>Från:</strong> {{ email.sender }}
+            </div>
+            <div class="email-view-date">
+                <strong>Datum:</strong> {{ email.imported_at }}
+            </div>
+        </div>
+        
+        {% if email.ai_summary %}
+        <div class="email-view-summary">
+            <strong>🤖 AI-sammanfattning:</strong>
+            <p>{{ email.ai_summary }}</p>
+        </div>
+        {% endif %}
+        
+        <div class="email-view-original">
+            <strong>Originalämne:</strong> {{ email.subject }}
+        </div>
+        
+        <hr class="email-divider">
+        
+        <div class="email-view-body">
+            {{ email.body | safe }}
+        </div>
+    </article>
+</div>
+{% endblock %}

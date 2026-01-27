@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Hämta mejl - MailSort{% endblock %}
+
+{% block content %}
+<div class="fetch-container">
+    <div class="fetch-box">
+        <h2>📥 Hämta nya mejl</h2>
+        <p>Ange hur många mejl du vill hämta från Gmail och klassificera med AI.</p>
+        
+        <form method="POST" action="{{ url_for('fetch_emails') }}">
+            <div class="form-group">
+                <label for="antal">Antal mejl:</label>
+                <input type="number" id="antal" name="antal" value="5" min="1" max="50" class="form-input">
+            </div>
+            <button type="submit" class="btn btn-primary btn-fetch">
+                🚀 Hämta och klassificera
+            </button>
+        </form>
+        
+        <p class="fetch-note">
+            ⚠️ Observera: Detta kan ta en stund beroende på antal mejl och AI-hastighet.
+        </p>
+        
+        <a href="{{ url_for('dashboard') }}" class="btn-back-link">← Tillbaka till dashboard</a>
+    </div>
+</div>
+{% endblock %}
