@@ -66,11 +66,13 @@ def my_emails(antal):
     
     return messages
 
-def get_latest_message_id_from_gmail():
+def get_latest_ids_from_gmail(count=3):
     global creds
-    service = build('gmail','v1', credentials=creds)
-    result = service.users().messages().list(userId='me',maxResults=1).execute()
-    messages = result.get('messages',[])
+    service = build('gmail', 'v1', credentials=creds)
+    result = service.users().messages().list(userId='me', maxResults=count).execute()
+    messages = result.get('messages', [])
     if not messages:
-        return None
-    return messages[0]['id']
+        return []
+    return [m['id'] for m in messages]
+
+

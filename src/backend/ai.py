@@ -12,28 +12,51 @@ client = OpenAI(
 )
 
 def classify_email(subject, body):
-    prompt = f"""Du är en intelligent e-postassistent. Analysera mejlet och klassificera det.
+    prompt = f"""
+Du ska klassificera ett mejl genom att gå igenom en strukturerad serie ja/nej‑kontroller i en bestämd ordning.
+Välj den första kategori där kriterierna stämmer.
 
-MEJL ATT ANALYSERA:
+MEJL:
 Ämne: {subject}
 Innehåll: {(body or '')[:2000]}
 
-KLASSIFICERINGSREGLER FÖR FOLDER:
-- "Kvitton" = Orderbekräftelser, bokningsbekräftelser, betalningskvitton, leveransbekräftelser, biljetter, fakturor
-- "Nyhetsbrev" = Marknadsföring, erbjudanden, rabatter, kampanjer, nyhetsbrev, reklam, "unsubscribe"-länkar
-- "Arbete" = Jobbmejl, kollegor, mötesinbjudningar, projekt, arbetsrelaterade ärenden
-- "Privat" = Vänner, familj, personliga meddelanden, privata ärenden
-- "Skräp" = Spam, phishing, bedrägeriförsök, oönskad reklam
-- "Övrigt" = Passar inte in i någon annan kategori
+KATEGORIER OCH KONTROLLER (i denna ordning):
 
-INSTRUKTIONER:
-1. folder: Välj den MEST passande kategorin baserat på reglerna ovan
-2. summary: Skriv en informativ sammanfattning på svenska (1-2 meningar) som förklarar vad mejlet handlar om
-3. subject: Skriv ett kort, tydligt ämne på svenska (max 10 ord)
+1. Kvitton
+Ja om mejlet gäller något av följande:
+- beställning, order, betalning, faktura, kvitto, leverans, bokning, biljett
+- formuleringar som ”tack för din beställning”, ”din order är mottagen”, ”betalning genomförd”
+- betalnings- eller transaktionsmeddelanden från t.ex. PayPal, Klarna, Stripe eller Swish
 
-Svara ENDAST med giltig JSON i detta exakta format:
-{{"folder": "kategori", "summary": "sammanfattning", "subject": "ämne"}}"""
+2. Nyhetsbrev
+Ja om mejlet innehåller:
+- erbjudanden, kampanjer, rabatter, reklam, produktnyheter
+- massutskick, automatiska utskick, ”unsubscribe”, ”newsletter”
 
+3. Arbete
+Ja om mejlet gäller:
+- kollegor, kunder, projekt, möten, arbetsuppgifter, rekrytering
+- arbetsrelaterade system som Jira, GitHub, Teams eller Slack
+
+4. Privat
+Ja om mejlet är:
+- från vänner, familj eller personliga kontakter
+- privata ärenden, sociala planer eller hobbygrupper
+
+5. Skräp
+Ja om mejlet är:
+- spam, bluff, phishing eller oseriösa utskick
+- okänd avsändare med misstänkt innehåll
+
+6. Övrigt
+Används endast om inget ovan stämmer.
+
+Instruktion:
+- Gå igenom kontrollerna i ordning.
+- Välj den första kategori som passar.
+- Svara med JSON:
+  {{"folder": "...", "summary": "...", "subject": "..."}}.
+"""
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",

@@ -67,15 +67,14 @@ def get_existing_message_ids(conn):
     return ids
 
 
-def get_latest_message_id_from_db(conn):
+def get_latest_ids_from_db(conn):
     cursor = conn.cursor()
     cursor.execute("""
         SELECT message_id
         FROM gmail_messages
         ORDER BY imported_at DESC
-        LIMIT 1
+        LIMIT 3
     """)
-    row = cursor.fetchone()
+    rows = cursor.fetchall()
     cursor.close()
-    return row[0] if row else None
-
+    return [row[0] for row in rows]
