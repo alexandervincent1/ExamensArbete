@@ -90,11 +90,7 @@ def fetch_emails():
         if not conn:
             session['msg'] = '❌ Kunde inte ansluta till databasen'
             return redirect(url_for('dashboard'))
-        
-        # Hämta alla sparade message_id för snabb lookup
         existing_ids = get_existing_message_ids(conn)
-        
-        # Hämta mejl tills vi har tillräckligt många nya
         msgs = my_emails(antal + len(existing_ids))
         
         saved = 0
@@ -105,7 +101,7 @@ def fetch_emails():
                 continue
             
             ai = classify_email(m['subject'], m['body'])
-            save_message(conn, m['id'], m['sender'], m['subject'], m['body'], ai.get('folder'), ai.get('summary'), ai.get('subject'))
+            save_message(conn, m['id'], m['sender'], m['subject'], m['body'], ai.get('folder'), ai.get('summary'), ai.get('subject'), m['timestamp'])
             saved += 1
         
         conn.close()

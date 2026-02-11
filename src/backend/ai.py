@@ -13,49 +13,33 @@ client = OpenAI(
 
 def classify_email(subject, body):
     prompt = f"""
-Du ska klassificera ett mejl genom att gå igenom en strukturerad serie ja/nej‑kontroller i en bestämd ordning.
-Välj den första kategori där kriterierna stämmer.
+Du ska klassificera ett mejl. Gå igenom kategorierna i ordning och välj den FÖRSTA som stämmer.
 
 MEJL:
 Ämne: {subject}
-Innehåll: {(body or '')[:2000]}
+Innehåll: {(body or '')[:3000]}
 
-KATEGORIER OCH KONTROLLER (i denna ordning):
+GÅ IGENOM I DENNA ORDNING:
 
-1. Kvitton
-Ja om mejlet gäller något av följande:
-- beställning, order, betalning, faktura, kvitto, leverans, bokning, biljett
-- formuleringar som ”tack för din beställning”, ”din order är mottagen”, ”betalning genomförd”
-- betalnings- eller transaktionsmeddelanden från t.ex. PayPal, Klarna, Stripe eller Swish
+1. Kvitton - JA om mejlet bekräftar något du köpt, betalat, bokat eller beställt.
+   Tänk: Fick jag detta för att jag spenderade pengar eller reserverade något?
 
-2. Nyhetsbrev
-Ja om mejlet innehåller:
-- erbjudanden, kampanjer, rabatter, reklam, produktnyheter
-- massutskick, automatiska utskick, ”unsubscribe”, ”newsletter”
+2. Nyhetsbrev - JA om mejlet är massutskick med reklam/erbjudanden.
+   Tänk: Skickades detta till tusentals personer för att sälja något?
 
-3. Arbete
-Ja om mejlet gäller:
-- kollegor, kunder, projekt, möten, arbetsuppgifter, rekrytering
-- arbetsrelaterade system som Jira, GitHub, Teams eller Slack
+3. Arbete - JA om mejlet rör jobb, kollegor eller arbetsuppgifter.
+   Tänk: Handlar detta om mitt arbete?
 
-4. Privat
-Ja om mejlet är:
-- från vänner, familj eller personliga kontakter
-- privata ärenden, sociala planer eller hobbygrupper
+4. Privat - JA om mejlet är personlig kommunikation.
+   Tänk: Är detta från någon jag känner personligen?
 
-5. Skräp
-Ja om mejlet är:
-- spam, bluff, phishing eller oseriösa utskick
-- okänd avsändare med misstänkt innehåll
+5. Skräp - JA om mejlet är spam, bluff eller phishing.
+   Tänk: Försöker detta lura mig?
 
-6. Övrigt
-Används endast om inget ovan stämmer.
+6. Övrigt - ENDAST om ingen kategori ovan passar.
 
-Instruktion:
-- Gå igenom kontrollerna i ordning.
-- Välj den första kategori som passar.
-- Svara med JSON:
-  {{"folder": "...", "summary": "...", "subject": "..."}}.
+Svara med JSON:
+{{"folder": "...", "summary": "kort sammanfattning på svenska", "subject": "kort ämne"}}
 """
     try:
         response = client.chat.completions.create(

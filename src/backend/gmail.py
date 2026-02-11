@@ -1,5 +1,6 @@
 import os
 import base64
+from datetime import datetime
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -61,7 +62,8 @@ def my_emails(antal):
             'id': msg['id'],
             'sender': headers.get('From'),
             'subject': headers.get('Subject'),
-            'body': _extract_body(data.get('payload', {}))
+            'body': _extract_body(data.get('payload', {})),
+            'timestamp': datetime.fromtimestamp(int(data.get('internalDate', 0)) / 1000)
         })
     
     return messages

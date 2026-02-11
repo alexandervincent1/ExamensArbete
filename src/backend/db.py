@@ -40,14 +40,15 @@ def initialize_database():
         return None
 
 
-def save_message(conn, message_id, sender, subject, body, ai_folder=None, ai_summary=None, ai_subject=None):
+def save_message(conn, message_id, sender, subject, body, ai_folder=None, ai_summary=None, ai_subject=None, gmail_timestamp=None):
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO gmail_messages (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE ai_folder=VALUES(ai_folder), ai_summary=VALUES(ai_summary), ai_subject=VALUES(ai_subject)
-    """, (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject))
+        INSERT INTO gmail_messages (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject, imported_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ON DUPLICATE KEY UPDATE ai_folder=VALUES(ai_folder), ai_summary=VALUES(ai_summary), ai_subject=VALUES(ai_subject), imported_at=VALUES(imported_at)
+    """, (message_id, sender, subject, body, ai_folder, ai_summary, ai_subject, gmail_timestamp))
     conn.commit()
+    cursor.close()
 
 
 def email_exists(conn, message_id):
